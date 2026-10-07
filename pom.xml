@@ -123,6 +123,10 @@
                     <!-- Сборка падает при наличии уязвимостей с CVSS >= 7 (High/Critical) -->
                     <failBuildOnCVSS>7</failBuildOnCVSS>
                     <nvdApiKeyEnvironmentVariable>NVD_API_KEY</nvdApiKeyEnvironmentVariable>
+                    <!-- NVD API нестабилен: меньшие страницы, пауза между запросами и больше повторов -->
+                    <nvdApiResultsPerPage>1000</nvdApiResultsPerPage>
+                    <nvdApiDelay>4000</nvdApiDelay>
+                    <nvdMaxRetryCount>15</nvdMaxRetryCount>
                     <suppressionFiles>
                         <suppressionFile>dependency-check-suppressions.xml</suppressionFile>
                     </suppressionFiles>
