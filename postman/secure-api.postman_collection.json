@@ -1,0 +1,449 @@
+{
+  "info": {
+    "name": "Secure API (lab1)",
+    "description": "Проверка аутентификации, JWT, защиты от SQLi и XSS. Запускать папки по порядку (Collection Runner). Перед запуском: `JWT_SECRET=$(openssl rand -base64 32) ./mvnw spring-boot:run`.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "1. Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "description": "Регистрация пользователя. Пароль хранится как bcrypt-хэш.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"201 Created (или 409, если пользователь уже есть)\", () => pm.expect(pm.response.code).to.be.oneOf([201, 409]));",
+                  "if (pm.response.code === 201) {",
+                  "  pm.test(\"Пароль/хэш не возвращается\", () => pm.expect(pm.response.json()).to.not.have.any.keys(\"password\", \"passwordHash\"));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register — weak input (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "register"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"<b>x</b>\",\n  \"password\": \"short\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"400 Bad Request\", () => pm.response.to.have.status(400));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login — wrong password (401)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"wrong-password\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"401 Unauthorized\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"Общее сообщение об ошибке\", () => pm.expect(pm.response.json().error).to.eql(\"Invalid username or password\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login — SQL injection (401)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"' OR '1'='1' --\",\n  \"password\": \"' OR '1'='1\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"SQLi не обходит аутентификацию\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth",
+                "login"
+              ]
+            },
+            "description": "Успешный вход. Токен сохраняется в переменную коллекции {{token}}.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"Получен JWT\", () => { pm.expect(body.tokenType).to.eql(\"Bearer\"); pm.expect(body.accessToken.split(\".\")).to.have.length(3); });",
+                  "pm.collectionVariables.set(\"token\", body.accessToken);"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "2. Protected API",
+      "item": [
+        {
+          "name": "Get data — no token (401)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/data",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "data"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"401 без токена\", () => pm.response.to.have.status(401));",
+                  "pm.test(\"WWW-Authenticate: Bearer\", () => pm.response.to.have.header(\"WWW-Authenticate\", \"Bearer\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get data — forged token alg=none (401)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer eyJhbGciOiJub25lIn0.eyJzdWIiOiJhZG1pbiJ9."
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/data",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "data"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"Неподписанный токен отклонён\", () => pm.response.to.have.status(401));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Create post — XSS payload",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/data",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "data"
+              ]
+            },
+            "description": "Третий метод: создание поста. Пользовательские данные экранируются в ответе.",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"<script>alert(1)</script>\",\n  \"content\": \"<img src=x onerror=alert('xss')>\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"201 Created\", () => pm.response.to.have.status(201));",
+                  "const body = pm.response.json();",
+                  "pm.test(\"HTML экранирован\", () => { pm.expect(body.title).to.eql(\"&lt;script&gt;alert(1)&lt;/script&gt;\"); pm.expect(body.content).to.not.include(\"<img\"); });"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get data",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/data",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "data"
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Ответ — массив\", () => pm.expect(pm.response.json()).to.be.an(\"array\"));",
+                  "pm.test(\"Есть CSP-заголовок\", () => pm.response.to.have.header(\"Content-Security-Policy\"));"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Search — SQL injection",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/data?q=' OR 1=1 --",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "data"
+              ],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "' OR 1=1 --"
+                }
+              ]
+            },
+            "description": ""
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test(\"200 OK\", () => pm.response.to.have.status(200));",
+                  "pm.test(\"Инъекция воспринята как текст — пустой результат\", () => pm.expect(pm.response.json()).to.have.length(0));"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "username",
+      "value": "alice"
+    },
+    {
+      "key": "password",
+      "value": "Str0ng-Passw0rd"
+    },
+    {
+      "key": "token",
+      "value": ""
+    }
+  ]
+}

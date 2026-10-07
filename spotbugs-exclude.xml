@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Исключения SpotBugs / Find Security Bugs. Каждое исключение обосновано.
+-->
+<FindBugsFilter>
+    <!--
+      SPRING_CSRF_PROTECTION_DISABLED: API stateless, аутентификация только через заголовок
+      Authorization: Bearer <JWT>, cookie/сессии не используются. Браузер не подставляет такой
+      заголовок автоматически, поэтому CSRF-атака невозможна.
+    -->
+    <Match>
+        <Class name="ru.itmo.secureapi.config.SecurityConfig"/>
+        <Bug pattern="SPRING_CSRF_PROTECTION_DISABLED"/>
+    </Match>
+
+    <!--
+      EI_EXPOSE_REP/EI_EXPOSE_REP2: Spring-бины и JPA-сущности, внедряемые через конструктор,
+      хранят ссылки на изменяемые объекты по замыслу фреймворка.
+    -->
+    <Match>
+        <Bug pattern="EI_EXPOSE_REP,EI_EXPOSE_REP2"/>
+    </Match>
+
+    <!--
+      SPRING_ENDPOINT, SERVLET_HEADER: информационные маркеры Find Security Bugs ("здесь входная точка",
+      "здесь читается заголовок"), а не уязвимости. Все входные данные эндпоинтов валидируются
+      (Bean Validation), заголовок Authorization проверяется криптографически (подпись JWT).
+    -->
+    <Match>
+        <Bug pattern="SPRING_ENDPOINT,SERVLET_HEADER"/>
+    </Match>
+
+    <!--
+      THROWS_METHOD_THROWS_CLAUSE_BASIC_EXCEPTION: HttpSecurity.build() из Spring Security
+      объявляет "throws Exception", сузить сигнатуру метода конфигурации нельзя.
+    -->
+    <Match>
+        <Class name="ru.itmo.secureapi.config.SecurityConfig"/>
+        <Bug pattern="THROWS_METHOD_THROWS_CLAUSE_BASIC_EXCEPTION"/>
+    </Match>
+</FindBugsFilter>

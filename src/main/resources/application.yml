@@ -1,0 +1,32 @@
+spring:
+  application:
+    name: secure-api
+  datasource:
+    url: jdbc:h2:mem:securedb;DB_CLOSE_DELAY=-1
+    username: sa
+    password: ""
+  h2:
+    console:
+      enabled: false
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: create-drop
+
+server:
+  port: 8080
+  error:
+    include-message: never
+    include-stacktrace: never
+    include-binding-errors: never
+
+app:
+  jwt:
+    # base64-ключ >= 256 бит, например: openssl rand -base64 32
+    secret: ${JWT_SECRET:}
+    ttl: 15m
+    issuer: secure-api
+  security:
+    login:
+      max-failures: 5
+      lock-duration: 5m
