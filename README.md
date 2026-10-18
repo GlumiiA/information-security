@@ -96,4 +96,4 @@ Pipeline `.github/workflows/ci.yml` запускается при каждом p
 
 ## Последний успешный pipeline
 
-https://github.com/GlumiiA/information-security/actions/runs/39118385558
+https://github.com/GlumiiA/information-security/actions/workflows/ci.yml?query=branch%3Alab-1+is%3Asuccess
