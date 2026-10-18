@@ -90,8 +90,6 @@ Pipeline `.github/workflows/ci.yml` запускается при каждом p
 
 ![Pipeline](docs/screenshots/actions.png)
 
-![SpotBugs](docs/screenshots/spotbugs.png)
-
 ![Dependency-Check](docs/screenshots/dependency-check.png)
 
 ## Последний успешный pipeline
