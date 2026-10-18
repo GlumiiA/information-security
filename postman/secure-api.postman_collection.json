@@ -1,102 +1,13 @@
 {
   "info": {
     "name": "Secure API (lab1)",
-    "description": "Проверка аутентификации, JWT, защиты от SQLi и XSS. Запускать папки по порядку (Collection Runner). Перед запуском: `JWT_SECRET=$(openssl rand -base64 32) ./mvnw spring-boot:run`.",
+    "description": "Запуск: JWT_SECRET=$(openssl rand -base64 32) ./mvnw spring-boot:run, затем Run collection.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "item": [
     {
       "name": "1. Auth",
       "item": [
-        {
-          "name": "Register",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/auth/register",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "register"
-              ]
-            },
-            "description": "Регистрация пользователя. Пароль хранится как bcrypt-хэш.",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"username\": \"{{username}}\",\n  \"password\": \"{{password}}\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"201 Created (или 409, если пользователь уже есть)\", () => pm.expect(pm.response.code).to.be.oneOf([201, 409]));",
-                  "if (pm.response.code === 201) {",
-                  "  pm.test(\"Пароль/хэш не возвращается\", () => pm.expect(pm.response.json()).to.not.have.any.keys(\"password\", \"passwordHash\"));",
-                  "}"
-                ]
-              }
-            }
-          ]
-        },
-        {
-          "name": "Register — weak input (400)",
-          "request": {
-            "method": "POST",
-            "header": [
-              {
-                "key": "Content-Type",
-                "value": "application/json"
-              }
-            ],
-            "url": {
-              "raw": "{{baseUrl}}/auth/register",
-              "host": [
-                "{{baseUrl}}"
-              ],
-              "path": [
-                "auth",
-                "register"
-              ]
-            },
-            "description": "",
-            "body": {
-              "mode": "raw",
-              "raw": "{\n  \"username\": \"<b>x</b>\",\n  \"password\": \"short\"\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            }
-          },
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "type": "text/javascript",
-                "exec": [
-                  "pm.test(\"400 Bad Request\", () => pm.response.to.have.status(400));"
-                ]
-              }
-            }
-          ]
-        },
         {
           "name": "Login — wrong password (401)",
           "request": {

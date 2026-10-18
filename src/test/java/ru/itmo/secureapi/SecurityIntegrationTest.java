@@ -11,7 +11,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import com.jayway.jsonpath.JsonPath;
-import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +24,8 @@ import ru.itmo.secureapi.user.UserRepository;
 @SpringBootTest
 class SecurityIntegrationTest {
 
-    private static final String PASSWORD = "S3cure-Passw0rd";
+    private static final String USERNAME = "alice";
+    private static final String PASSWORD = "Str0ng-Passw0rd";
 
     @Autowired
     private WebApplicationContext context;
@@ -34,25 +34,22 @@ class SecurityIntegrationTest {
     private UserRepository users;
 
     private MockMvc mvc;
-    private String username;
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         mvc = MockMvcBuilders.webAppContextSetup(context).apply(springSecurity()).build();
-        username = "user_" + UUID.randomUUID().toString().substring(0, 8);
-        register(username, PASSWORD);
     }
 
     @Test
     void passwordIsStoredAsBcryptHash() {
-        String hash = users.findByUsername(username).orElseThrow().getPasswordHash();
+        String hash = users.findByUsername(USERNAME).orElseThrow().getPasswordHash();
         assertTrue(hash.startsWith("$2a$12$"), "password must be stored as bcrypt hash");
         assertTrue(!hash.contains(PASSWORD));
     }
 
     @Test
     void loginReturnsJwt() throws Exception {
-        mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content(credentials(username, PASSWORD)))
+        mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content(credentials(USERNAME, PASSWORD)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.tokenType").value("Bearer"))
                 .andExpect(jsonPath("$.accessToken").isNotEmpty());
@@ -60,7 +57,7 @@ class SecurityIntegrationTest {
 
     @Test
     void loginWithWrongPasswordIsRejected() throws Exception {
-        mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content(credentials(username, "wrong-password")))
+        mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content(credentials(USERNAME, "wrong-password")))
                 .andExpect(status().isUnauthorized())
                 .andExpect(jsonPath("$.error").value("Invalid username or password"));
     }
@@ -120,28 +117,22 @@ class SecurityIntegrationTest {
     @Test
     void accountIsTemporarilyLockedAfterTooManyFailures() throws Exception {
         for (int i = 0; i < 5; i++) {
-            mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content(credentials(username, "bad-" + i)))
+            mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content(credentials("bob", "bad-" + i)))
                     .andExpect(status().isUnauthorized());
         }
-        mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content(credentials(username, PASSWORD)))
+        mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content(credentials("bob", "Bob-Passw0rd-123")))
                 .andExpect(status().isTooManyRequests());
     }
 
     @Test
-    void weakRegistrationInputIsRejected() throws Exception {
-        mvc.perform(post("/auth/register").contentType(MediaType.APPLICATION_JSON)
-                        .content(credentials("<b>x</b>", "short")))
+    void emptyCredentialsAreRejected() throws Exception {
+        mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON).content(credentials("", "")))
                 .andExpect(status().isBadRequest());
-    }
-
-    private void register(String user, String password) throws Exception {
-        mvc.perform(post("/auth/register").contentType(MediaType.APPLICATION_JSON).content(credentials(user, password)))
-                .andExpect(status().isCreated());
     }
 
     private String login() throws Exception {
         String body = mvc.perform(post("/auth/login").contentType(MediaType.APPLICATION_JSON)
-                        .content(credentials(username, PASSWORD)))
+                        .content(credentials(USERNAME, PASSWORD)))
                 .andExpect(status().isOk())
                 .andReturn().getResponse().getContentAsString();
         return JsonPath.read(body, "$.accessToken");

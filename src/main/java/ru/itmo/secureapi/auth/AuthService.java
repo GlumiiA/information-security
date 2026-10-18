@@ -7,7 +7,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.itmo.secureapi.security.JwtService;
-import ru.itmo.secureapi.user.Role;
 import ru.itmo.secureapi.user.User;
 import ru.itmo.secureapi.user.UserRepository;
 
@@ -30,15 +29,6 @@ public class AuthService {
         this.jwtService = jwtService;
         this.loginAttempts = loginAttempts;
         this.dummyHash = passwordEncoder.encode(UUID.randomUUID().toString());
-    }
-
-    @Transactional
-    public UserResponse register(RegisterRequest request) {
-        if (users.existsByUsername(request.username())) {
-            throw new AuthException(HttpStatus.CONFLICT, "Username is already taken");
-        }
-        User user = users.save(new User(request.username(), passwordEncoder.encode(request.password()), Role.USER));
-        return UserResponse.from(user);
     }
 
     @Transactional(readOnly = true)
