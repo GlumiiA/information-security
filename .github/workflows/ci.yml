@@ -81,8 +81,6 @@ jobs:
           key: nvd-${{ runner.os }}-${{ github.run_id }}
           restore-keys: nvd-${{ runner.os }}-
       - name: Run OWASP Dependency-Check
-        env:
-          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
         run: ./mvnw -B org.owasp:dependency-check-maven:check
       - name: Upload Dependency-Check report
         if: always()
