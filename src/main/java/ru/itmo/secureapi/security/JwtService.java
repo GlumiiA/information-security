@@ -28,7 +28,6 @@ public final class JwtService {
 
     public JwtService(JwtProperties properties) {
         if (StringUtils.hasText(properties.secret())) {
-            // Keys.hmacShaKeyFor бросает исключение, если ключ короче 256 бит
             this.key = Keys.hmacShaKeyFor(Decoders.BASE64.decode(properties.secret()));
         } else {
             log.warn("JWT_SECRET is not set: generated a random key, tokens will be invalid after restart");
@@ -51,10 +50,6 @@ public final class JwtService {
                 .compact();
     }
 
-    /**
-     * Проверяет подпись, срок действия и издателя. Неподписанные токены (alg=none) и токены,
-     * подписанные другим ключом, отклоняются библиотекой.
-     */
     public Optional<String> validateAndGetUsername(String token) {
         try {
             Claims claims = Jwts.parser()
@@ -65,7 +60,6 @@ public final class JwtService {
                     .getPayload();
             return Optional.ofNullable(claims.getSubject());
         } catch (JwtException | IllegalArgumentException e) {
-            // в лог пишем только тип ошибки: сообщение может содержать данные из токена (CRLF-инъекция в логи)
             log.debug("Rejected JWT: {}", e.getClass().getSimpleName());
             return Optional.empty();
         }

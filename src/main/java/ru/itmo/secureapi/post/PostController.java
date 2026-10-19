@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Защищённые эндпоинты: доступны только с валидным JWT (см. SecurityConfig). */
 @RestController
 @RequestMapping("/api/data")
 @Validated

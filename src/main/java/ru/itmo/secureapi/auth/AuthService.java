@@ -19,7 +19,6 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final LoginAttemptService loginAttempts;
-    /** Хэш-«пустышка»: проверяется, когда пользователя нет, чтобы время ответа не выдавало существование логина. */
     private final String dummyHash;
 
     public AuthService(UserRepository users, PasswordEncoder passwordEncoder, JwtService jwtService,

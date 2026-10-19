@@ -9,7 +9,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-/** Защита от перебора паролей: после N неудачных попыток логин временно блокируется. */
 @Service
 public class LoginAttemptService {
 

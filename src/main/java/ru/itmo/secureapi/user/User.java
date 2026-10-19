@@ -21,7 +21,6 @@ public class User {
     @Column(nullable = false, unique = true, length = 32)
     private String username;
 
-    /** Только bcrypt-хэш, пароль в открытом виде нигде не хранится. */
     @Column(name = "password_hash", nullable = false, length = 72)
     private String passwordHash;
 

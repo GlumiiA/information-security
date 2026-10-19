@@ -26,7 +26,6 @@ server:
 
 app:
   jwt:
-    # base64-ключ >= 256 бит, например: openssl rand -base64 32
     secret: ${JWT_SECRET:}
     ttl: 15m
     issuer: secure-api

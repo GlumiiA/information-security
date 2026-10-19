@@ -7,7 +7,6 @@ import org.springframework.http.MediaType;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.access.AccessDeniedHandler;
 
-/** Ответы 401/403 в JSON без раскрытия причин отказа. Тело — константа, данные запроса в ответ не попадают. */
 public final class SecurityErrorHandlers {
 
     private static final byte[] UNAUTHORIZED_BODY =

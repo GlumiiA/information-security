@@ -16,7 +16,6 @@ import org.springframework.web.method.annotation.HandlerMethodValidationExceptio
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 import ru.itmo.secureapi.auth.AuthException;
 
-/** Единый формат ошибок; стек-трейсы и внутренние детали клиенту не отдаются. */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
 

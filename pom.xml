@@ -19,7 +19,6 @@
 
     <properties>
         <java.version>21</java.version>
-        <!-- Tomcat 11.0.24 из Spring Boot содержит CVE с CVSS до 9.8 (найдено OWASP Dependency-Check) -->
         <tomcat.version>11.0.26</tomcat.version>
         <jjwt.version>0.13.0</jjwt.version>
         <spotbugs-plugin.version>4.10.4.1</spotbugs-plugin.version>
@@ -88,7 +87,6 @@
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
 
-            <!-- SAST: SpotBugs + плагин Find Security Bugs -->
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
@@ -111,7 +109,6 @@
                 </configuration>
             </plugin>
 
-            <!-- SCA: OWASP Dependency-Check -->
             <plugin>
                 <groupId>org.owasp</groupId>
                 <artifactId>dependency-check-maven</artifactId>
@@ -122,10 +119,7 @@
                         <format>JSON</format>
                         <format>SARIF</format>
                     </formats>
-                    <!-- Сборка падает при наличии уязвимостей с CVSS >= 7 (High/Critical) -->
                     <failBuildOnCVSS>7</failBuildOnCVSS>
-                    <!-- База уязвимостей NVD загружается с ежедневно обновляемого зеркала проекта Dependency-Check
-                         вместо NVD API (тот часто недоступен и требует ключ) -->
                     <nvdDatafeedUrl>https://dependency-check.github.io/DependencyCheck_Builder/nvd_cache/</nvdDatafeedUrl>
                     <suppressionFiles>
                         <suppressionFile>dependency-check-suppressions.xml</suppressionFile>

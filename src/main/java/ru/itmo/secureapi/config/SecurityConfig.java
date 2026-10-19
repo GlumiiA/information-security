@@ -25,7 +25,6 @@ public class SecurityConfig {
         return new BCryptPasswordEncoder(12);
     }
 
-    /** Пользователи берутся из БД (заменяет автоконфигурацию Spring со сгенерированным паролем). */
     @Bean
     public UserDetailsService userDetailsService(UserRepository users) {
         return username -> users.findByUsername(username)
@@ -40,8 +39,6 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http, JwtAuthenticationFilter jwtFilter)
             throws Exception {
         http
-                // API stateless: аутентификация только через заголовок Authorization (JWT), cookie не используются,
-                // поэтому CSRF-атака невозможна и CSRF-токены не нужны.
                 .csrf(csrf -> csrf.disable())
                 .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .httpBasic(b -> b.disable())
